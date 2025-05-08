@@ -58,55 +58,20 @@ security_group = aws.ec2.SecurityGroup('lazarev-lab-secgrp',
         }
     ])
 
-#security_group = aws.ec2.SecurityGroup('lazarev-lab-secgrp',
-#    vpc_id=vpc.id,
-#    description='Enable SSH access',
-#    ingress=[{
-#        'protocol': 'tcp',
-#        'from_port': 22,
-#        'to_port': 22,
-#        'cidr_blocks': ['44.214.210.109/32'],
-#    }],
-#    egress=[{
-#        'protocol': '-1',
-#        'from_port': 0,
-#        'to_port': 0,
-#        'cidr_blocks': ['0.0.0.0/0'],
-#    }])
 
-# Define user data script to install Docker
-'''
-startup_script = """#!/bin/bash
-# Log the start of the script
-echo "Starting Docker installation script..." | tee -a /var/log/cloud-init-output.log
-
-# Update the package repository
-echo "Updating package repository..." | tee -a /var/log/cloud-init-output.log
-sudo yum update -y | tee -a /var/log/cloud-init-output.log
-
-# Install Docker
-echo "Installing Docker..." | tee -a /var/log/cloud-init-output.log
-sudo yum install -y docker | tee -a /var/log/cloud-init-output.log
-
-# Start Docker service
-echo "Starting Docker service..." | tee -a /var/log/cloud-init-output.log
-sudo systemctl start docker | tee -a /var/log/cloud-init-output.log
-
-# Enable Docker service to start on boot
-echo "Enabling Docker service to start on boot..." | tee -a /var/log/cloud-init-output.log
-sudo systemctl enable docker | tee -a /var/log/cloud-init-output.log
-
-# Add fedora to the docker group to run Docker commands without sudo
-echo "Adding fedora to the docker group..." | tee -a /var/log/cloud-init-output.log
-sudo usermod -aG docker fedora | tee -a /var/log/cloud-init-output.log
-
-# Log the end of the script
-echo "Docker installation script completed." | tee -a /var/log/cloud-init-output.log
-"""
-'''
 # Read the script from the file
 with open('srm-docker-inst.sh', 'r') as file:
-    startup_script = file.read()
+    f_content = file.read()
+    
+# Problematic chars escape
+# escaped_file_content = f_content.replace('"', '\\"')
+
+# Define user data script
+startup_script = f"""#!/bin/bash
+exec > >(tee -a /var/log/cloud-init-output.log) 2>&1
+set -x
+echo "{f_content}" > /home/fedora/srm-docker-inst.sh | tee -a /var/log/cloud-init-output.log
+"""
 
 # Create an EC2 instance - SRM Docker
 server = aws.ec2.Instance('srm-docker',
@@ -116,6 +81,10 @@ server = aws.ec2.Instance('srm-docker',
     ami='ami-07df3bb06da88a158',  # Fedora Cloud 42 AMI in us-east-1
     key_name='lazarev-ec2',
     user_data=startup_script,
+    root_block_device={
+        "volume_size": 64,  # Set the root volume size to 64GB
+        "volume_type": "gp3",  # General Purpose SSD
+    },
     tags={
         "Name": "lazarev-srm-docker"  # Set the instance name
     })
