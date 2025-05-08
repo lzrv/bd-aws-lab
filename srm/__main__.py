@@ -34,21 +34,48 @@ route_table_association = aws.ec2.RouteTableAssociation("lazarev-route-table-ass
 # Create a security group allowing inbound access on port 22 (SSH) and all outbound traffic
 security_group = aws.ec2.SecurityGroup('lazarev-lab-secgrp',
     vpc_id=vpc.id,
-    description='Enable SSH access',
-    ingress=[{
-        'protocol': 'tcp',
-        'from_port': 22,
-        'to_port': 22,
-        'cidr_blocks': ['44.214.210.109/32'],
-    }],
-    egress=[{
-        'protocol': '-1',
-        'from_port': 0,
-        'to_port': 0,
-        'cidr_blocks': ['0.0.0.0/0'],
-    }])
+    description='Enable SSH and HTTPS access',
+    ingress=[
+        {
+            'protocol': 'tcp',
+            'from_port': 22,
+            'to_port': 22,
+            'cidr_blocks': ['44.214.210.109/32'],  # SSH access
+        },
+        {
+            'protocol': 'tcp',
+            'from_port': 443,
+            'to_port': 443,
+            'cidr_blocks': ['44.214.210.109/32'],  # HTTPS access
+        }
+    ],
+    egress=[
+        {
+            'protocol': '-1',
+            'from_port': 0,
+            'to_port': 0,
+            'cidr_blocks': ['0.0.0.0/0'],  # Allow all outbound traffic
+        }
+    ])
+
+#security_group = aws.ec2.SecurityGroup('lazarev-lab-secgrp',
+#    vpc_id=vpc.id,
+#    description='Enable SSH access',
+#    ingress=[{
+#        'protocol': 'tcp',
+#        'from_port': 22,
+#        'to_port': 22,
+#        'cidr_blocks': ['44.214.210.109/32'],
+#    }],
+#    egress=[{
+#        'protocol': '-1',
+#        'from_port': 0,
+#        'to_port': 0,
+#        'cidr_blocks': ['0.0.0.0/0'],
+#    }])
 
 # Define user data script to install Docker
+'''
 startup_script = """#!/bin/bash
 # Log the start of the script
 echo "Starting Docker installation script..." | tee -a /var/log/cloud-init-output.log
@@ -76,10 +103,14 @@ sudo usermod -aG docker fedora | tee -a /var/log/cloud-init-output.log
 # Log the end of the script
 echo "Docker installation script completed." | tee -a /var/log/cloud-init-output.log
 """
+'''
+# Read the script from the file
+with open('srm-docker-inst.sh', 'r') as file:
+    startup_script = file.read()
 
 # Create an EC2 instance - SRM Docker
 server = aws.ec2.Instance('srm-docker',
-    instance_type='t2.micro',
+    instance_type='t3.large',
     subnet_id=subnet.id,
     vpc_security_group_ids=[security_group.id],
     ami='ami-07df3bb06da88a158',  # Fedora Cloud 42 AMI in us-east-1
