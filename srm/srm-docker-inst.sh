@@ -1,22 +1,34 @@
 #!/bin/bash
 
 function install_docker {
-    echo "Starting Docker installation script..." | tee -a /var/log/cloud-init-output.log
-    echo "Updating package repository..." | tee -a /var/log/cloud-init-output.log
-    sudo yum update -y | tee -a /var/log/cloud-init-output.log
-    echo "Installing Docker..." | tee -a /var/log/cloud-init-output.log
-    sudo yum install -y docker wget | tee -a /var/log/cloud-init-output.log
-    echo "Starting Docker service..." | tee -a /var/log/cloud-init-output.log
-    sudo systemctl start docker | tee -a /var/log/cloud-init-output.log
-    echo "Enabling Docker service to start on boot..." | tee -a /var/log/cloud-init-output.log
-    sudo systemctl enable docker | tee -a /var/log/cloud-init-output.log
-    echo "Adding fedora to the docker group..." | tee -a /var/log/cloud-init-output.log
-    sudo usermod -aG docker fedora | tee -a /var/log/cloud-init-output.log
-    echo "Docker installation script completed." | tee -a /var/log/cloud-init-output.log
+# Update the package repository
+echo "Updating package repository..."
+sudo yum update -y | tee -a /var/log/cloud-init-output.log
+
+# Install Docker Engine and wget
+sudo dnf -y install dnf-plugins-core wget
+sudo dnf-3 config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo
+sudo dnf -y install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+# Install Docker (OLD)
+# echo "Installing Docker..." | tee -a /var/log/cloud-init-output.log
+# sudo yum install -y docker | tee -a /var/log/cloud-init-output.log
+
+# Start Docker service
+echo "Starting Docker service..."
+sudo systemctl start docker
+
+# Enable Docker service to start on boot
+echo "Enabling Docker service to start on boot..."
+sudo systemctl enable docker 
+
+# Add fedora to the docker group to run Docker commands without sudo
+echo "Adding fedora to the docker group..."
+sudo usermod -aG docker fedora 
 }
 
 function generate_ssl_files {
-    openssl req -new -newkey rsa:4096 -days 3650 -nodes -x509 -subj "/C=US/ST=New York/L=Northport/O=SRM/CN=localhost" -keyout ./ssl.key -out ./ssl.crt
+    sudo openssl req -new -newkey rsa:4096 -days 3650 -nodes -x509 -subj "/C=US/ST=New York/L=Northport/O=SRM/CN=localhost" -keyout ./ssl.key -out ./ssl.crt
 }
 
 function get_running_srm_version {
@@ -74,7 +86,7 @@ function main {
     #exec > >(tee -a /var/log/cloud-init-output.log) 2>&1
 
     # Enable debugging
-    #set -x
+    set -x
 
     mkdir /opt/srm;cd /opt/srm
     generate_ssl_files
