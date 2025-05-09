@@ -54,12 +54,11 @@ function check_if_srm_is_running_and_stop {
 }
 
 function configure_docker_compose {
-    sed -i '' '/codedx-appdata-volume:/a\
-\            - /opt/srm/ssl.crt:/usr/local/tomcat/conf/ssl.crt\
-\            - /opt/srm/ssl.key:/usr/local/tomcat/conf/ssl.key\
-\            - /opt/srm/server.xml:/usr/local/tomcat/conf/server.xml\
-' docker-compose.yml
-    sed -i 's/8080:8080/443:8443/g' docker-compose.yml
+    sudo sed -i "/^\s*-\s*codedx-appdata-volume:\/opt\/codedx$/a\\
+            - /opt/srm/srm-docker-$SRM_VERSION/ssl.crt:/usr/local/tomcat/conf/ssl.crt\\
+            - /opt/srm/srm-docker-$SRM_VERSION/ssl.key:/usr/local/tomcat/conf/ssl.key\\
+            - /opt/srm/srm-docker-$SRM_VERSION/server.xml:/usr/local/tomcat/conf/server.xml" docker-compose.yml
+    sudo sed -i 's/8080:8080/443:8443/g' docker-compose.yml
 }
 
 function start_srm_docker {
@@ -77,6 +76,7 @@ function start_srm_docker {
     sudo cp $SSL_KEY /opt/srm/srm-docker-$SRM_VERSION/ssl.key
     sudo cp $SSL_CERT /opt/srm/srm-docker-$SRM_VERSION/ssl.crt
     configure_docker_compose
+    sudo chown -R fedora:fedora /opt/srm/
     docker compose -f docker-compose.yml up -d
     #fi
 }
@@ -88,7 +88,7 @@ function main {
     # Enable debugging
     set -x
 
-    mkdir /opt/srm;cd /opt/srm
+    sudo mkdir /opt/srm;cd /opt/srm
     generate_ssl_files
 
     SSL_KEY="/opt/srm/ssl.key"
