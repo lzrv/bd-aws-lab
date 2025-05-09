@@ -68,8 +68,6 @@ with open('srm-docker-inst.sh', 'r') as file:
 
 # Define user data script
 startup_script = f"""#!/bin/bash
-exec > >(tee -a /var/log/cloud-init-output.log) 2>&1
-set -x
 echo "{f_content}" > /home/fedora/srm-docker-inst.sh | tee -a /var/log/cloud-init-output.log
 """
 
@@ -78,7 +76,8 @@ server = aws.ec2.Instance('srm-docker',
     instance_type='t3.large',
     subnet_id=subnet.id,
     vpc_security_group_ids=[security_group.id],
-    ami='ami-07df3bb06da88a158',  # Fedora Cloud 42 AMI in us-east-1
+    #ami='ami-07df3bb06da88a158',  # Fedora Cloud 42 AMI in us-east-1
+    ami='ami-0442c33072690b439',  # test SRM AMI 
     key_name='lazarev-ec2',
     user_data=startup_script,
     root_block_device={
