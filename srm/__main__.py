@@ -1,4 +1,5 @@
 """An AWS Python Pulumi program"""
+# TODO: add bd-sca docker and k8s instances, and BDBA standalone k8s
 
 import pulumi
 import pulumi_aws as aws
