@@ -3,7 +3,7 @@
 function install_docker {
 # Update the package repository
 echo "Updating package repository..."
-sudo yum update -y | tee -a /var/log/cloud-init-output.log
+sudo yum update -y
 
 # Install Docker Engine and wget
 sudo dnf -y install dnf-plugins-core wget
