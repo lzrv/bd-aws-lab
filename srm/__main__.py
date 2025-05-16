@@ -1,5 +1,6 @@
-"""An AWS Python Pulumi program"""
+"""BD AWS lab"""
 # TODO: add bd-sca docker and k8s instances, and BDBA standalone k8s
+# 17GB RAM sca services + 9GB postgres
 
 import pulumi
 import pulumi_aws as aws
@@ -78,7 +79,7 @@ server = aws.ec2.Instance('srm-docker',
     subnet_id=subnet.id,
     vpc_security_group_ids=[security_group.id],
     #ami='ami-07df3bb06da88a158',  # Fedora Cloud 42 AMI in us-east-1
-    ami='ami-0442c33072690b439',  # test SRM AMI 
+    ami='ami-01b7e394d946843f6',  # test SRM AMI 
     key_name='lazarev-ec2',
     user_data=startup_script,
     root_block_device={
