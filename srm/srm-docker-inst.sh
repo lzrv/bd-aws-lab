@@ -1,34 +1,34 @@
 #!/bin/bash
 
 function install_docker {
-# Update the package repository
-echo "Updating package repository..."
-sudo yum update -y
+  # Update the package repository
+  echo "Updating package repository..."
+  sudo yum update -y
 
-# Install Docker Engine and wget
-sudo dnf -y install dnf-plugins-core wget
-sudo dnf-3 config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo
-sudo dnf -y install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+  # Install Docker Engine and wget
+  sudo dnf -y install dnf-plugins-core wget
+  sudo dnf-3 config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo
+  sudo dnf -y install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-# Install Docker (OLD)
-# echo "Installing Docker..." | tee -a /var/log/cloud-init-output.log
-# sudo yum install -y docker | tee -a /var/log/cloud-init-output.log
+  # Install Docker (OLD)
+  # echo "Installing Docker..." | tee -a /var/log/cloud-init-output.log
+  # sudo yum install -y docker | tee -a /var/log/cloud-init-output.log
 
-# Start Docker service
-echo "Starting Docker service..."
-sudo systemctl start docker
+  # Start Docker service
+  echo "Starting Docker service..."
+  sudo systemctl start docker
 
-# Enable Docker service to start on boot
-echo "Enabling Docker service to start on boot..."
-sudo systemctl enable docker 
+  # Enable Docker service to start on boot
+  echo "Enabling Docker service to start on boot..."
+  sudo systemctl enable docker 
 
-# Add fedora to the docker group to run Docker commands without sudo
-echo "Adding fedora to the docker group..."
-sudo usermod -aG docker fedora 
+  # Add fedora to the docker group to run Docker commands without sudo
+  echo "Adding fedora to the docker group..."
+  sudo usermod -aG docker fedora 
 }
 
 function generate_ssl_files {
-    sudo openssl req -new -newkey rsa:4096 -days 3650 -nodes -x509 -subj "/C=US/ST=New York/L=Northport/O=SRM/CN=localhost" -keyout ./ssl.key -out ./ssl.crt
+  sudo openssl req -new -newkey rsa:4096 -days 3650 -nodes -x509 -subj "/C=US/ST=New York/L=Northport/O=SRM/CN=localhost" -keyout ./ssl.key -out ./ssl.crt
 }
 
 function get_running_srm_version {
@@ -93,7 +93,7 @@ function main {
 
     SSL_KEY="/opt/srm/ssl.key"
     SSL_CERT="/opt/srm/ssl.crt"
-    SRM_VERSION="1.119.0"
+    SRM_VERSION="1.121.0"
 
     install_docker
     #check_if_srm_is_running_and_stop
